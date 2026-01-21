@@ -11,6 +11,8 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   referee:
     runs-on: ubuntu-latest
+    env:
+      REF: ${{ github.event.inputs.ref }}
     steps:
 
       - name: Checkout ref (passing direct parameter)
@@ -20,10 +22,8 @@ jobs:
 
       - name: Checkout ref (interpolate to env var)
         uses: actions/checkout@v6
-        env:
-          REF: ${{ github.event.inputs.ref }}
         with:
-          ref: "$REF"
+          ref: ${{ env.REF }}
 
       - name: Show what we checked out
         env:
