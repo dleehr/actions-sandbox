@@ -33,7 +33,7 @@ jobs:
 
       - name: Lowercase github owner (node)
         run: |
-          echo "OWNER=$(echo 'console.log("${{ github.repository_owner }}".toLowerCase())' | node -)" >> $GITHUB_ENV
+          echo "OWNER_NODE=$(echo 'console.log("${{ github.repository_owner }}".toLowerCase())' | node -)" >> $GITHUB_ENV
 
       - name: Lowercase github owner (tr)
         run: |
@@ -41,4 +41,5 @@ jobs:
 
       - name: Show results of lowercasing
         run: |
-          grep OWNER $GITHUB_ENV
+          echo "node: ${{ env.OWNER_NODE }}"
+          echo "tr: ${{ env.OWNER }}"
