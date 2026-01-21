@@ -15,6 +15,10 @@ jobs:
       REF: ${{ github.event.inputs.ref }}
     steps:
 
+      - name: Show current HEAD before checkout
+        run: |
+          echo "Before checkout, HEAD is $(git rev-parse HEAD)"
+
       - name: Checkout ref (interpolate to env var)
         uses: actions/checkout@v6
         with:
@@ -24,5 +28,5 @@ jobs:
         env:
           REF: ${{ github.event.inputs.ref }}
         run: |
-          echo "The current head is $(git rev-parse HEAD)"
+          echo "After checkout, HEAD is $(git rev-parse HEAD)"
           echo "If that matches $REF, LGTM"
