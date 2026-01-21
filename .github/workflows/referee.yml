@@ -12,7 +12,13 @@ jobs:
   referee:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ref
+
+      - name: Checkout ref (passing direct parameter)
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Checkout ref (interpolate to env var)
         uses: actions/checkout@v6
         env:
           REF: ${{ github.event.inputs.ref }}
