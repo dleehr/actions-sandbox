@@ -15,9 +15,9 @@ jobs:
       REF: ${{ github.event.inputs.ref }}
     steps:
 
-      - name: Show github ref  before checkout
+      - name: Show github SHA before checkout
         run: |
-          echo "Before checkout, GITHUB_REF is $GITHUB_REF"
+          echo "Before checkout, GITHUB_SHA is $GITHUB_SHA"
 
       - name: Checkout ref (interpolate to env var)
         uses: actions/checkout@v6
