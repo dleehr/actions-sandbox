@@ -1,0 +1,27 @@
+on:
+  workflow_dispatch:
+    inputs:
+      role:
+        description: 'A role'
+        required: true
+        default: 'github-role'
+
+jobs:
+  retrieve-secret:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Retrieve secret from Vault
+        uses: hashicorp/vault-action@9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b
+        with:
+          method: jwt
+          url: https://plaza-unusable-quickstep.ngrok-free.dev
+          role: ${{ github.event.inputs.role }}
+          secrets: /path/to/secret
+
+      - name: Use secret from Vault
+        run: |
+          # This step has access to the secret retrieved above; see hashicorp/vault-action for more details.
+          echo "hello world"
