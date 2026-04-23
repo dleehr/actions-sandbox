@@ -1,25 +1,22 @@
 on:
   workflow_dispatch:
-    inputs:
-      role:
-        description: 'A role'
-        required: true
-        default: 'github-role'
 
 jobs:
   retrieve-secret:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
+      id-token: write
     steps:
       - name: Retrieve secret from Vault
         uses: hashicorp/vault-action@v2
         with:
-          method: jwt
           url: https://plaza-unusable-quickstep.ngrok-free.dev
-          role: ${{ github.event.inputs.role }}
-          secrets: /path/to/secret
+          method: jwt
+          role: github-role
+          jwtGithubAudience: my-audience
+          secrets: |
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
 
       - name: Use secret from Vault
         run: |
