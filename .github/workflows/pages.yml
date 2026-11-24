@@ -1,7 +1,6 @@
-# Negative control: depth-1 checkout WITHOUT the targeted fetch step.
-# Mirrors ansible/handbook pages.yml structure. The build derives
-# last-modified dates from git history; with a shallow clone these
-# should come out empty/wrong. The follow-up commit adds the fetch.
+# Mirrors ansible/handbook pages.yml: depth-1 checkout plus a targeted
+# fetch of full history for refs/heads/main only, so the build's
+# git-derived dates are correct without fetching other branches.
 name: Deploy static content to Pages
 
 permissions:
@@ -24,6 +23,16 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
+
+      # The build derives last-modified dates from git history.
+      # Fetch full history for main only; a fetch-depth of 0 would
+      # also fetch every other branch.
+      - name: Fetch full history for main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          git fetch --unshallow origin +refs/heads/main:refs/remotes/origin/main
 
       - name: Build site
         run: |
