@@ -1,0 +1,70 @@
+---
+name: preview
+
+permissions:
+  contents: write
+
+concurrency: preview-${{ github.ref }}
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout merged PR code
+        if: github.event.action != 'closed'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 1
+          allow-unsafe-pr-checkout: true
+          persist-credentials: false
+
+      # The build derives last-modified dates from git history.
+      # Fetch full history for the PR merge ref only; a fetch-depth of 0
+      # would also fetch every other branch.
+      - name: Fetch full history for PR
+        if: github.event.action != 'closed'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          git fetch --unshallow origin "refs/pull/${{ github.event.pull_request.number }}/merge"
+
+      - name: Checkout base branch (PR closed)
+        if: github.event.action == 'closed'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 1
+          allow-unsafe-pr-checkout: true
+          persist-credentials: false
+
+      - name: Build site
+        if: github.event.action != 'closed'
+        run: |
+          mkdir -p public
+          {
+            echo "<html><head><title>actions-sandbox preview</title></head><body>"
+            echo "<h1>Git-derived last-modified dates (PR preview)</h1>"
+            echo "<table border=\"1\">"
+            for f in $(git ls-files 'content/*.md'); do
+              printf '<tr><td>%s</td><td>%s</td></tr>\n' "$f" "$(git log -1 --format='%ci' -- "$f")"
+            done
+            echo "</table></body></html>"
+          } > public/index.html
+          cat public/index.html
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          source-dir: public
+          pages-base-url: dleehr.github.io
+          qr-code: false

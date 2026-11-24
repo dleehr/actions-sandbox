@@ -1,0 +1,48 @@
+# Negative control: depth-1 checkout WITHOUT the targeted fetch step.
+# Mirrors ansible/handbook pages.yml structure. The build derives
+# last-modified dates from git history; with a shallow clone these
+# should come out empty/wrong. The follow-up commit adds the fetch.
+name: Deploy static content to Pages
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Build site
+        run: |
+          mkdir -p public
+          {
+            echo "<html><head><title>actions-sandbox</title></head><body>"
+            echo "<h1>Git-derived last-modified dates</h1>"
+            echo "<table border=\"1\">"
+            for f in $(git ls-files 'content/*.md'); do
+              printf '<tr><td>%s</td><td>%s</td></tr>\n' "$f" "$(git log -1 --format='%ci' -- "$f")"
+            done
+            echo "</table></body></html>"
+          } > public/index.html
+          cat public/index.html
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          folder: public
+          branch: gh-pages
+          clean-exclude: pr-preview
+          force: false
